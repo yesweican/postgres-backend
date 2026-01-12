@@ -12,8 +12,8 @@ router.post(
   videoController.createVideo
 );
 
-router.get("/", videoController.getAllVideos);
-router.get("/:id", videoController.getVideoById);
+router.get("/", authenticateToken, videoController.getMyVideos);
+router.get("/:id", authenticateToken, videoController.getVideoById);
 
 router.put(
   "/:id",

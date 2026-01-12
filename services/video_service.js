@@ -5,8 +5,8 @@ export const createVideo = async (data) => {
   return videoRepository.create(data);
 };
 
-export const getAllVideos = async () => {
-  return videoRepository.findAll();
+export const getMyVideos = async (userId) => {
+  return videoRepository.findByCreator(userId);
 };
 
 export const getVideoById = async (id) => {
@@ -30,6 +30,11 @@ export const updateVideo = async (videoId, userId, updates) => {
 
   return videoRepository.update(videoId, updates);
 };
+
+export const searchVideos = async (query) => {
+  return videoRepository.search(query);
+};
+
 
 export const deleteVideo = async (videoId, userId) => {
   const video = await videoRepository.findById(videoId);

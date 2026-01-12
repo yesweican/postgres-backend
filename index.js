@@ -7,6 +7,7 @@ import userRoutes from "./routes/user-route.js";
 import articleRoutes from "./routes/article-route.js";
 import articleCommentRoutes from "./routes/article-comment-route.js";
 import videoRoutes from "./routes/video-route.js";
+import videoSearchRoutes from "./routes/video-search-route.js"; 
 import followingRoutes from "./routes/following-route.js";
 import followerRoutes from "./routes/follower-route.js";
 import channelRoutes from "./routes/channel-route.js";
@@ -15,20 +16,25 @@ import subscriptionRoutes from "./routes/subscription-route.js";
 import { authenticateToken } from "./middleware/auth_middleware.js";
 import errorHandler from "./middleware/error_middleware.js";
 
-
-
 // Create the express server and configure it to use json
 const app = express();
 app.use(express.json());
 
 // Configure cors policy
-app.use(cors())
+//app.use(cors())
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/article", articleRoutes);
 app.use("/api/articlecomments", articleCommentRoutes);
 app.use("/api/video", videoRoutes);
+app.use("/api/videosearch", videoSearchRoutes);
 app.use("/api/following", followingRoutes);
 app.use("/api/follower", followerRoutes);
 app.use("/api/channel", channelRoutes);

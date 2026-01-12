@@ -18,10 +18,17 @@ export const create = async ({
   return rows[0];
 };
 
-export const findAll = async () => {
+export const findByCreator = async (creatorId) => {
   const { rows } = await pool.query(
-    `SELECT * FROM videos ORDER BY created_at DESC`
+    `
+    SELECT *
+    FROM videos
+    WHERE creator = $1
+    ORDER BY created_at DESC
+    `,
+    [creatorId]
   );
+
   return rows;
 };
 
@@ -50,6 +57,28 @@ export const update = async (id, { title, description, video_url }) => {
 
   return rows[0];
 };
+
+export const search = async (query) => {
+  const { rows } = await pool.query(
+    `
+    SELECT
+      v.*,
+      ts_rank(
+        to_tsvector('english', coalesce(v.title, '') || ' ' || coalesce(v.description, '')),
+        plainto_tsquery('english', $1)
+      ) AS rank
+    FROM videos v
+    WHERE
+      to_tsvector('english', coalesce(v.title, '') || ' ' || coalesce(v.description, ''))
+      @@ plainto_tsquery('english', $1)
+    ORDER BY rank DESC, created_at DESC
+    `,
+    [query]
+  );
+
+  return rows;
+};
+
 
 export const remove = async (id) => {
   await pool.query(

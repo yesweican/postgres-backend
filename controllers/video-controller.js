@@ -30,14 +30,15 @@ export const createVideo = async (req, res, next) => {
   }
 };
 
-export const getAllVideos = async (req, res, next) => {
+export const getMyVideos = async (req, res, next) => {
   try {
-    const videos = await videoService.getAllVideos();
+    const videos = await videoService.getMyVideos(req.user.id);
     res.json(videos);
   } catch (err) {
     next(err);
   }
 };
+
 
 export const getVideoById = async (req, res, next) => {
   try {
@@ -71,6 +72,22 @@ export const updateVideo = async (req, res, next) => {
     next(err);
   }
 };
+
+export const searchVideos = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || !q.trim()) {
+      throw new AppError("Search query is required", 400);
+    }
+
+    const videos = await videoService.searchVideos(q);
+    res.json(videos);
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 export const deleteVideo = async (req, res, next) => {
   try {
