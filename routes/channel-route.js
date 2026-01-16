@@ -10,7 +10,7 @@ router.post(
   channelController.createChannel
 );
 
-router.get("/", channelController.getMyChannels);
+router.get("/", authenticateToken, channelController.getMyChannels);
 router.get("/:id", channelController.getChannelById);
 
 router.put(

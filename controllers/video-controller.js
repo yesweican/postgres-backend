@@ -31,8 +31,17 @@ export const createVideo = async (req, res, next) => {
 };
 
 export const getMyVideos = async (req, res, next) => {
+
   try {
-    const videos = await videoService.getMyVideos(req.user.id);
+    const userid = req.user.id;
+
+    if (!userid) {
+      throw new AppError("User ID is required", 400);
+    }
+
+    console.log("user id:", userid);
+    const videos = await videoService.getMyVideos(userid);
+    console.log("my videos:", videos);
     res.json(videos);
   } catch (err) {
     next(err);

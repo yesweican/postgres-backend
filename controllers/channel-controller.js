@@ -24,8 +24,13 @@ export const getChannelById = async (req, res, next) => {
 };
 
 export const getMyChannels = async (req, res, next) => {
-  const userid = req.user.id;
   try {
+    const userid = req.user.id;
+
+    if (!userid) {
+      throw new AppError("User ID is required", 400);
+    }
+
     const channels = await channelService.getMyChannels(userid);
     res.json(channels);
   } catch (err) {

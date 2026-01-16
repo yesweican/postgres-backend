@@ -13,7 +13,7 @@ router.post(
 );
 
 router.get("/", authenticateToken, videoController.getMyVideos);
-router.get("/:id", authenticateToken, videoController.getVideoById);
+router.get("/:id", videoController.getVideoById);
 
 router.put(
   "/:id",

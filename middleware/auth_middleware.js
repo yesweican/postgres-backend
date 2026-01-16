@@ -9,6 +9,8 @@ export const authenticateToken = (req, res, next) => {
     ? authHeader.split(' ')[1] // Extract the token after "Bearer"
     : null;
 
+  console.log("Authenticating token:", token);
+
   if (!token) return res.status(401).json({ message: 'Access denied' });
 
   jwt.verify(token, JWT_SECRET, (err, payload) => {
