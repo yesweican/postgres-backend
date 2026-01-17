@@ -39,10 +39,11 @@ export const getMyVideos = async (req, res, next) => {
       throw new AppError("User ID is required", 400);
     }
 
-    console.log("user id:", userid);
-    const videos = await videoService.getMyVideos(userid);
-    console.log("my videos:", videos);
-    res.json(videos);
+    const results = await videoService.getMyVideos(userid);
+    res.status(200).json({
+      count: results.length,
+      results
+    });
   } catch (err) {
     next(err);
   }
@@ -90,8 +91,10 @@ export const searchVideos = async (req, res, next) => {
       throw new AppError("Search query is required", 400);
     }
 
-    const videos = await videoService.searchVideos(q);
-    res.json(videos);
+    const results = await videoService.searchVideos(q);
+    res.status(200).json({ query: q, 
+    count: results.length, 
+    results });
   } catch (err) {
     next(err);
   }

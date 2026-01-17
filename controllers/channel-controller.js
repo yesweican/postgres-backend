@@ -31,8 +31,11 @@ export const getMyChannels = async (req, res, next) => {
       throw new AppError("User ID is required", 400);
     }
 
-    const channels = await channelService.getMyChannels(userid);
-    res.json(channels);
+    const results = await channelService.getMyChannels(userid);
+    res.status(200).json({
+      count: results.length,
+      results
+    });
   } catch (err) {
     next(err);
   }
