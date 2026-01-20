@@ -5,8 +5,8 @@ export const createArticle = async (data) => {
   return articleRepository.create(data);
 };
 
-export const getAllArticles = async () => {
-  return articleRepository.findAll();
+export const getMyArticles = async (userId) => {
+  return articleRepository.findByAuthor(userId);
 };
 
 export const getArticleById = async (id) => {

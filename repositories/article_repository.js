@@ -18,9 +18,10 @@ export const create = async ({
   return rows[0];
 };
 
-export const findAll = async () => {
+export const findByAuthor = async (authorId) => {
   const { rows } = await pool.query(
-    `SELECT * FROM articles ORDER BY created_at DESC`
+    `SELECT * FROM articles WHERE author = $1 ORDER BY created_at DESC`,
+    [authorId]
   );
   return rows;
 };

@@ -29,9 +29,15 @@ export const createArticle = async (req, res, next) => {
   }
 };
 
-export const getAllArticles = async (req, res, next) => {
+export const getMyArticles = async (req, res, next) => {
   try {
-    const articles = await articleService.getAllArticles();
+    const userid = req.user.id;
+
+    if (!userid) {
+      throw new AppError("User ID is required", 400);
+    }
+
+    const articles = await articleService.getMyArticles(userid);
     res.json(articles);
   } catch (err) {
     next(err);
