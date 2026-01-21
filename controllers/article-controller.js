@@ -37,8 +37,11 @@ export const getMyArticles = async (req, res, next) => {
       throw new AppError("User ID is required", 400);
     }
 
-    const articles = await articleService.getMyArticles(userid);
-    res.json(articles);
+    const results = await articleService.getMyArticles(userid);
+    res.status(200).json({
+      count: results.length,
+      results
+    });
   } catch (err) {
     next(err);
   }
