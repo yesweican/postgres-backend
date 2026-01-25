@@ -22,6 +22,7 @@ export const createVideo = async (req, res, next) => {
       description: req.body.description,
       video_url: videoPath,
       creator: req.user.id,
+      channelId: req.body.channelId
     });
 
     res.status(201).json(video);
@@ -64,12 +65,12 @@ export const updateVideo = async (req, res, next) => {
     const updates = {
       title: req.body.title,
       description: req.body.description,
+      channelId: req.body.channelId
     };
 
-    if (req.file) {
-      //updates.video_url = `/uploads/videos/${req.file.filename}`;
-      updates.video_url = buildVideoUrl(req, req.file.filename);
-    }
+    // if (req.file) {
+    //   updates.video_url = buildVideoUrl(req, req.file.filename);
+    // }
 
     const video = await videoService.updateVideo(
       req.params.id,

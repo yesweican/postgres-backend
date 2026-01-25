@@ -5,14 +5,15 @@ export const create = async ({
   description,
   video_url,
   creator,
+  channel_id
 }) => {
   const { rows } = await pool.query(
     `
-    INSERT INTO videos (title, description, video_url, creator)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO videos (title, description, video_url, creator, channel_id)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING *
     `,
-    [title, description, video_url, creator]
+    [title, description, video_url, creator, channel_id]
   );
 
   return rows[0];
@@ -40,19 +41,19 @@ export const findById = async (id) => {
   return rows[0];
 };
 
-export const update = async (id, { title, description, video_url }) => {
+export const update = async (id, { title, description, channel_id }) => {
   const { rows } = await pool.query(
     `
     UPDATE videos
     SET
       title = COALESCE($2, title),
       description = COALESCE($3, description),
-      video_url = COALESCE($4, video_url),
+      channel_id = COALESCE($4, channel_id),
       updated_at = now()
     WHERE id = $1
     RETURNING *
     `,
-    [id, title, description, video_url]
+    [id, title, description, channel_id]
   );
 
   return rows[0];
