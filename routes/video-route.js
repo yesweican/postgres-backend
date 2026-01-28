@@ -15,10 +15,9 @@ router.post(
 router.get("/", authenticateToken, videoController.getMyVideos);
 router.get("/:id", videoController.getVideoById);
 
-router.put(
+router.patch(
   "/:id",
   authenticateToken,
-  uploadVideo.single("file"),
   videoController.updateVideo
 );
 
