@@ -65,7 +65,7 @@ export const updateVideo = async (req, res, next) => {
     const updates = {
       title: req.body.title,
       description: req.body.description,
-      channelId: req.body.channelId
+      channel_id: req.body.channel_id
     };
 
     // if (req.file) {

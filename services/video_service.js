@@ -46,15 +46,14 @@ export const updateVideo = async (videoId, userId, updates) => {
     throw new AppError("Forbidden", 403);
   }
 
-
-  if(updates.channelId) {
+   if(updates.channel_id) {
     /* ---------- Channel Ownership Check ---------- */
-    const channel = await channelRepository.findById(updates.channelId);
+    const channel = await channelRepository.getChannelById(updates.channel_id);
     if (!channel) {
       throw new AppError("Channel not found", 404);
     }
 
-    if (channel.owner_id !== userId) {
+      if (channel.owner !== userId) {
       throw new AppError(
         "You are not authorized to upload videos to this channel",
         403
