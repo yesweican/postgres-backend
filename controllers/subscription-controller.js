@@ -2,8 +2,10 @@ import * as subscriptionService from "../services/subscription_service.js";
 
 export const subscribe = async (req, res, next) => {
   try {
+
+    console.log("Controller: Subscribing user", req.user.id, "to channel", req.params.id);
     const result = await subscriptionService.subscribe(
-      req.params.channelId,
+      req.params.id,
       req.user.id
     );
 
