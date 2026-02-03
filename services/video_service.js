@@ -5,18 +5,20 @@ import { AppError } from "../errors/app_error.js";
 export const createVideo = async (data) => {
   if(data.channelId) {
     /* ---------- Channel Ownership Check ---------- */
-    const channel = await channelRepository.findById(data.channelId);
+    const channel = await channelRepository.getChannelById(data.channelId);
     if (!channel) {
       throw new AppError("Channel not found", 404);
     }
 
-    if (channel.owner_id !== data.creator) {
+    if (channel.owner !== data.creator) {
       throw new AppError(
         "You are not authorized to upload videos to this channel",
         403
       );
     }
   }
+
+  console.log("Creating video with data:", data);
 
   return videoRepository.create(data);
 };

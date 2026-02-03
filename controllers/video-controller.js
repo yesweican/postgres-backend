@@ -22,7 +22,7 @@ export const createVideo = async (req, res, next) => {
       description: req.body.description,
       video_url: videoPath,
       creator: req.user.id,
-      channelId: req.body.channelId
+      channel_id: req.body.channelId
     });
 
     res.status(201).json(video);
