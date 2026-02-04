@@ -13,6 +13,7 @@ import followerRoutes from "./routes/follower-route.js";
 import channelRoutes from "./routes/channel-route.js";
 import subscriberRoutes from "./routes/subscriber-route.js";
 import subscriptionRoutes from "./routes/subscription-route.js";
+import subscriptionVideosRoutes from "./routes/subscription-videos-route.js";
 import { authenticateToken } from "./middleware/auth_middleware.js";
 import errorHandler from "./middleware/error_middleware.js";
 
@@ -39,6 +40,7 @@ app.use("/api/following", followingRoutes);
 app.use("/api/follower", followerRoutes);
 app.use("/api/channel", channelRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/subsvideos", subscriptionVideosRoutes);
 app.use("/api/subscriber", subscriberRoutes);
 
 // Protected route example using middleware

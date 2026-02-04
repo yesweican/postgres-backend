@@ -101,6 +101,29 @@ export const searchVideos = async (req, res, next) => {
   }
 };
 
+export const getSubscriptionVideos = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    if (!userId) {
+      throw new AppError("User ID is required", 400);
+    }
+
+    // const page = parseInt(req.query.page || "0", 10);
+    // const pageSize = parseInt(req.query.pageSize || "20", 10);
+    const page = 0;
+    const pageSize = 20;
+
+    const result = await videoService.getSubscriptionVideos(
+      userId,
+      { page, pageSize }
+    );
+
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const deleteVideo = async (req, res, next) => {
   try {

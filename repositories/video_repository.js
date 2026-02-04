@@ -80,6 +80,31 @@ export const search = async (query) => {
   return rows;
 };
 
+export const findSubscriptionVideos = async ( userId, { limit = 20, offset = 0 }) => {
+  const query = `
+    SELECT
+      v.id,
+      v.title,
+      v.description,
+      v.video_url,
+      v.created_at,
+      c.id   AS channel_id,
+      c.name AS channel_name
+    FROM subscriptions s
+    JOIN videos v
+      ON v.channel_id = s.channel
+    JOIN channels c
+      ON c.id = v.channel_id
+    WHERE s.subscriber = $1
+    ORDER BY v.created_at DESC
+    LIMIT $2 OFFSET $3
+  `;
+
+  const { rows } = await pool.query(query, [userId, limit, offset]);
+  return rows;
+};
+
+
 
 export const remove = async (id) => {
   await pool.query(
