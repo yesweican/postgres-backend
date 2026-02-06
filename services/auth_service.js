@@ -14,7 +14,7 @@ const SALT_ROUNDS = 10;
 
 /* ---------- Register ---------- */
 
-export const register = async ({ username, email, password }) => {
+export const register = async ({ username, email, password, fullname }) => {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   try {
@@ -22,6 +22,7 @@ export const register = async ({ username, email, password }) => {
       username,
       email: email.toLowerCase(),
       passwordHash,
+      fullname
     });
   } catch (err) {
     if (err.code === "23505") {

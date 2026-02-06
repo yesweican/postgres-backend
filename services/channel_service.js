@@ -23,6 +23,37 @@ export const getMyChannels = async (userId) => {
   return channelRepo.getChannelsByOwner(userId);
 };
 
+export const getChannelSubscribers = async ({
+  channelId,
+  userId,
+  page,
+  pageSize
+}) => {
+  // 1. Verify channel exists + owner
+  const channel = await channelRepo.getChannelById(channelId);
+
+  if (!channel) {
+    throw new AppError("Channel not found", 404);
+  }
+
+  if (channel.owner !== userId) {
+    throw new AppError("Forbidden: not channel owner", 403);
+  }
+
+  // 2. Fetch subscribers
+  const subscribers = await channelRepo.findSubscribersByChannelId(
+    channelId,
+    page,
+    pageSize
+  );
+
+  return {
+    channelId,
+    count: subscribers.length,
+    results: subscribers
+  };
+};
+
 export const updateChannel = async (channelId, userId, updates) => {
   const channel = await channelRepo.getChannelById(channelId);
 

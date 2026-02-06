@@ -1,68 +1,133 @@
-import * as channelService from "../services/channel_service.js";
+// controllers/postController.js
+import Channel from '../models/channel-model.js';
+import Subscription from '../models/subscription-model.js';
+import { AppError } from '../errors/app_error.js'
+import mongoose from 'mongoose';
 
-export const createChannel = async (req, res, next) => {
+// Create a new channel
+export const createChannel = async (req, res) => {
+  const { name, description } = req.body;
+  //console.log('last user:'+ req.user);  // the user<=userId from middleware
   try {
-    const channel = await channelService.createChannel({
-      name: req.body.name,
-      description: req.body.description,
-      owner: req.user.id
-    });
+    console.log('User Id:', req.user);
+    const newChannel = new Channel({ name, description, owner: req.user.userId });
+    const savedChannel = await newChannel.save();
 
-    res.status(201).json(channel);
-  } catch (err) {
-    next(err);
+    res.status(201).json({ message: 'Channel created successfully', channel: savedChannel });
+  } catch (error) {
+    //console.error('Error creating channel:', error);
+    res.status(500).json({ message: 'Failed to create Channel, author=>'+user, error: error.message });
   }
 };
 
-export const getChannelById = async (req, res, next) => {
-  try {
-    const channel = await channelService.getChannelById(req.params.id);
-    res.json(channel);
-  } catch (err) {
-    next(err);
-  }
-};
+// Get all My Channels
+export const getMyChannels = async (req, res) => {
+  try{
+    const { userId }  = req.user;
 
-export const getMyChannels = async (req, res, next) => {
-  try {
-    const userid = req.user.id;
-
-    if (!userid) {
+    if (!userId) {
       throw new AppError("User ID is required", 400);
-    }
+    }    
 
-    const results = await channelService.getMyChannels(userid);
+    const results = await Channel.find({ owner: userId }).populate("owner", "fullname email");
+
     res.status(200).json({
       count: results.length,
       results
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch My Channels", error: error.message });
   }
 };
 
-export const updateChannel = async (req, res, next) => {
+export const getChannelById = async (req, res) => {
   try {
-    const channel = await channelService.updateChannel(
-      req.params.id,
-      req.user.id,
-      {
-        name: req.body.name,
-        description: req.body.description
-      }
-    );
+    const { id } = req.params;
 
-    res.json(channel);
-  } catch (err) {
-    next(err);
+    const channel = await Channel.findById(id).populate("owner", "fullname email");
+    if (!channel) return res.status(404).json({ message: "Channel not found" });
+    return res.status(200).json(channel);
+
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch Channel By Id", error: error.message });
   }
 };
 
-export const deleteChannel = async (req, res, next) => {
+export const getChannelSubscribers = async (req, res) => {
   try {
-    await channelService.deleteChannel(req.params.id, req.user.id);
-    res.sendStatus(204);
+    const { id } = req.params;
+
+    const page = 0;
+    const pageSize = 20;
+
+    if (!id) {
+      throw new AppError("Channel ID is required", 400);
+    }
+
+    /* ------------------------------------
+       1️⃣ Load channel & ownership check
+    ------------------------------------ */
+    const channel = await Channel.findById(id);
+
+    if (!channel) {
+      throw new AppError("Channel not found", 404);
+    }
+
+    if (channel.owner.toString() !== req.user.userId) {
+      throw new AppError("Forbidden: not channel owner", 403);
+    }
+
+    console.log(`Fetching subscribers for channel: ${id}`);
+
+    const subscriptions = await Subscription.find({ channel: id })
+      .populate("subscriber", "username fullname email")
+      .sort({ createdAt: -1 })
+      .skip(page * pageSize)
+      .limit(pageSize);
+
+    console.log(subscriptions);
+
+    const results = subscriptions.map(s => s.subscriber);
+
+    res.status(200).json({
+      channelId: id,
+      count: results.length,
+      results
+    });
   } catch (err) {
-    next(err);
+    console.log(err.message);
+  }
+};
+  
+// Update Channel by Id
+export const updateChannel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    //// To-Do check channel ownership
+    const updatedChannel = await Channel.findByIdAndUpdate(id, req.body, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate the new data against the schema
+    });
+
+    if (!updatedChannel) return res.status(404).json({ message: "Channel not found" });
+
+    res.status(200).json({ message: "Channel updated successfully", channel: updatedChannel });
+  } catch (error) {
+    res.status(400).json({ message: "Failed to update channel", error: error.message });
+  }
+};
+  
+// Get all Channels or get Channel by Id
+export const deleteChannel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    ////To-Do: check channel ownership
+    const deletedChannel = await Channel.findByIdAndDelete(id);
+
+    if (!deletedChannel) return res.status(404).json({ message: "Channel not found" });
+
+    res.status(200).json({ message: "Channel deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete channel", error: error.message });
   }
 };

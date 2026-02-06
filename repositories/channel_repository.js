@@ -40,6 +40,34 @@ export const getChannelsByOwner = async (ownerId) => {
   return rows;
 };
 
+export const findSubscribersByChannelId = async (
+  channelId,
+  page,
+  pageSize
+) => {
+  const offset = page * pageSize;
+
+  const { rows } = await pool.query(
+    `
+    SELECT
+      u.id,
+      u.username,
+      u.fullname,
+      u.email,
+      s.created_at
+    FROM subscriptions s
+    JOIN users u ON u.id = s.subscriber
+    WHERE s.channel = $1
+    ORDER BY s.created_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [channelId, pageSize, offset]
+  );
+
+  return rows;
+};
+
+
 export const updateChannel = async (id, name, description) => {
   const { rows } = await pool.query(
     `

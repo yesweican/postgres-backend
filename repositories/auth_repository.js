@@ -17,14 +17,14 @@ export const findByUsernameOrEmail = async (identifier) => {
   return rows[0];
 };
 
-export const createUser = async ({ username, email, passwordHash }) => {
+export const createUser = async ({ username, email, passwordHash, fullname }) => {
   const { rows } = await pool.query(
     `
-    INSERT INTO users (username, email, password_hash)
-    VALUES ($1, $2, $3)
+    INSERT INTO users (username, email, password_hash, fullname)
+    VALUES ($1, $2, $3, $4)
     RETURNING id, username, email, created_at
     `,
-    [username, email, passwordHash]
+    [username, email, passwordHash, fullname]
   );
   return rows[0];
 };
