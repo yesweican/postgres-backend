@@ -35,11 +35,21 @@ export const findByCreator = async (creatorId) => {
 
 export const findById = async (id) => {
   const { rows } = await pool.query(
-    `SELECT * FROM videos WHERE id = $1`,
+    `
+    SELECT
+      v.*,
+      c.name AS channel_name
+    FROM videos v
+    LEFT JOIN channels c
+      ON v.channel_id = c.id
+    WHERE v.id = $1
+    `,
     [id]
   );
+
   return rows[0];
 };
+
 
 export const update = async (id, { title, description, channel_id }) => {
   const { rows } = await pool.query(
