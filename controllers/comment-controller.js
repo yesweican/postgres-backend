@@ -21,8 +21,10 @@ export async function createComment(req, res, next) {
 export async function getCommentsByVideo(req, res, next) {
   try {
     const { videoId } = req.params;
-    const comments = await commentsService.getCommentsByVideo(videoId);
-    res.json(comments);
+    const results= await commentsService.getCommentsByVideo(videoId);
+    res.status(200).json({
+    count: results.length, 
+    results });
   } catch (err) {
     next(err);
   }

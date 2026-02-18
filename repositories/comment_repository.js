@@ -25,20 +25,32 @@ export async function insertComment(comment) {
   return rows[0];
 }
 
-export async function findByVideoId(videoId) {
+export async function findByVideoId(videoId, { limit = 20, offset = 0 } = {}) {
   const { rows } = await pool.query(
     `
-    SELECT *
-    FROM comments
-    WHERE video_id = $1
-      AND deleted = false
-    ORDER BY created_at ASC
+    SELECT
+      c.id,
+      c.video_id,
+      c.comment_details,
+      c.creator,
+      u.username AS creator_username,
+      c.comment_replyto,
+      c.created_at,
+      c.updated_at
+    FROM comments c
+    JOIN users u
+      ON u.id = c.creator
+    WHERE c.video_id = $1
+      AND c.deleted = false
+      AND c.comment_replyto IS NULL
+    ORDER BY c.created_at DESC
+    LIMIT $2 OFFSET $3
     `,
-    [videoId]
+    [videoId, limit, offset]
   );
 
   return rows;
-}
+};
 
 export async function findById(id) {
   const { rows } = await pool.query(
