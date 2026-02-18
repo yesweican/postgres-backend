@@ -1,4 +1,4 @@
-import pool from "../db/pool.js";
+import { pool } from "../db/pool.js";
 
 export async function insertComment(comment) {
   const { rows } = await pool.query(
