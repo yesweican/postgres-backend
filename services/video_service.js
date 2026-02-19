@@ -85,20 +85,7 @@ export const getSubscriptionVideos = async (
     { limit: pageSize, offset }
   );
 
-  return {
-    count: videos.length,
-    results: videos.map(v => ({
-      id: v.id,
-      title: v.title,
-      description: v.description,
-      videoURL: v.video_url,
-      createdAt: v.created_at,
-      channel: {
-        id: v.channel_id,
-        name: v.channel_name
-      }
-    }))
-  };
+  return videos;
 };
 
 

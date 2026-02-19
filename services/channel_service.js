@@ -47,11 +47,29 @@ export const getChannelSubscribers = async ({
     pageSize
   );
 
-  return {
+  return subscribers
+};
+
+export const getChannelVideos = async ({
+  channelId,
+  page,
+  pageSize
+}) => {
+
+  const channel = await channelRepo.getChannelById(channelId);
+
+  if (!channel) {
+    throw new AppError("Channel not found", 404);
+  }
+
+  // 2. Fetch videos
+  const videos = await channelRepo.findVideosByChannelId(
     channelId,
-    count: subscribers.length,
-    results: subscribers
-  };
+    page,
+    pageSize
+  );
+
+  return videos;
 };
 
 export const updateChannel = async (channelId, userId, updates) => {

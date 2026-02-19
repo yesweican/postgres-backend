@@ -54,14 +54,47 @@ export const getChannelSubscribers = async (req, res) => {
       throw new AppError("Channel ID is required", 400);
     }
 
-    const result = await channelService.getChannelSubscribers({
+    const results = await channelService.getChannelSubscribers({
       channelId: id,
       userId,
       page,
       pageSize
     });
 
-    res.status(200).json(result);
+    res.status(200).json({
+      channelId: id,
+      count: results.length,
+      results
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const getChannelVideos = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("Fetching videos for channel ID:", id);
+
+    const page = 0;
+    const pageSize = 20;
+
+    if (!id) {
+      throw new AppError("Channel ID is required", 400);
+    }
+
+    const results = await channelService.getChannelVideos({
+      channelId: id,
+      page,
+      pageSize
+    });
+
+    res.status(200).json({
+      count: results.length,
+      results
+    });
+
   } catch (err) {
     console.error(err);
   }

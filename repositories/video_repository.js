@@ -38,7 +38,8 @@ export const findById = async (id) => {
     `
     SELECT
       v.*,
-      c.name AS channel_name
+      c.name AS channel_name,
+      c.id as channel_id
     FROM videos v
     LEFT JOIN channels c
       ON v.channel_id = c.id

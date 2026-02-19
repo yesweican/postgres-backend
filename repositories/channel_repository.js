@@ -67,6 +67,34 @@ export const findSubscribersByChannelId = async (
   return rows;
 };
 
+export const findVideosByChannelId = async (
+  channelId,
+  page,
+  pageSize
+) => {
+  const offset = page * pageSize;
+
+  const { rows } = await pool.query(
+    `
+    SELECT
+      v.id,
+      v.title,
+      v.description,
+      v.video_url,
+      v.channel_id,
+      v.created_at
+    FROM videos v
+    JOIN channels c ON c.id = v.channel_id
+    WHERE v.channel_id = $1
+    ORDER BY v.created_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [channelId, pageSize, offset]
+  );
+
+  return rows;
+};
+
 
 export const updateChannel = async (id, name, description) => {
   const { rows } = await pool.query(

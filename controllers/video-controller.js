@@ -114,12 +114,26 @@ export const getSubscriptionVideos = async (req, res, next) => {
     const page = 0;
     const pageSize = 20;
 
-    const result = await videoService.getSubscriptionVideos(
+    const videos = await videoService.getSubscriptionVideos(
       userId,
       { page, pageSize }
     );
 
-    res.status(200).json(result);
+    res.status(200).json(
+      {
+        count: videos.length,
+        results: videos.map(v => ({
+          id: v.id,
+          title: v.title,
+          description: v.description,
+          videoURL: v.video_url,
+          createdAt: v.created_at,
+          channel: {
+            id: v.channel_id,
+            name: v.channel_name
+          }
+        }))
+      });
   } catch (err) {
     next(err);
   }
