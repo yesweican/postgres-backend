@@ -13,9 +13,26 @@ export async function createComment(data) {
   return commentsRepo.insertComment(comment);
 }
 
-export async function getCommentsByVideo(videoId) {
-  // returns flat list; frontend or helper can build tree
-  return commentsRepo.findByVideoId(videoId);
+//=================comment_service==================
+
+export async function getCommentsByVideo(
+  videoId,
+  { page = 0, pageSize = 20 } = {}
+) {
+
+  if (!videoId) {
+    throw new AppError("Video ID is required", 400);
+  }
+
+  const offset = page * pageSize;
+
+  const { total, rows } =
+    await commentsRepo.findByVideoId(
+      videoId,
+      { limit: pageSize, offset }
+    );
+
+  return { total, rows };
 }
 
 export async function updateComment(commentId, userId, commentDetails) {

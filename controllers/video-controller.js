@@ -1,5 +1,6 @@
 import * as videoService from "../services/video_service.js";
 import { AppError } from "../errors/app_error.js";
+import { getPaginationParams } from "../utils/pagination.js";
 
 const buildVideoUrl = (req, filename) => {
   // This is the SINGLE place video_url is constructed
@@ -32,24 +33,33 @@ export const createVideo = async (req, res, next) => {
 };
 
 export const getMyVideos = async (req, res, next) => {
-
   try {
-    const userid = req.user.id;
+    const userId = req.user.id;
 
-    if (!userid) {
+    if (!userId) {
       throw new AppError("User ID is required", 400);
     }
 
-    const results = await videoService.getMyVideos(userid);
+    const { page, pageSize, offset } = getPaginationParams(req);
+
+    const { rows, total } = await videoService.getMyVideos(
+      userId,
+      pageSize,
+      offset
+    );
+
     res.status(200).json({
-      count: results.length,
-      results
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
     });
+
   } catch (err) {
     next(err);
   }
 };
-
 
 export const getVideoById = async (req, res, next) => {
   try {
@@ -92,10 +102,23 @@ export const searchVideos = async (req, res, next) => {
       throw new AppError("Search query is required", 400);
     }
 
-    const results = await videoService.searchVideos(q);
-    res.status(200).json({ query: q, 
-    count: results.length, 
-    results });
+    const { page, pageSize, offset } = getPaginationParams(req);
+
+    const { rows, total } = await videoService.searchVideos(
+      q,
+      pageSize,
+      offset
+    );
+
+    res.status(200).json({
+      query: q,
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
+    });
+
   } catch (err) {
     next(err);
   }
@@ -109,31 +132,24 @@ export const getSubscriptionVideos = async (req, res, next) => {
       throw new AppError("User ID is required", 400);
     }
 
-    // const page = parseInt(req.query.page || "0", 10);
-    // const pageSize = parseInt(req.query.pageSize || "20", 10);
-    const page = 0;
-    const pageSize = 20;
+    const { page, pageSize, offset } = getPaginationParams(req);
 
-    const videos = await videoService.getSubscriptionVideos(
+    const { rows, total } = await videoService.getSubscriptionVideos(
       userId,
-      { page, pageSize }
+      pageSize,
+      offset
     );
 
-    res.status(200).json(
-      {
-        count: videos.length,
-        results: videos.map(v => ({
-          id: v.id,
-          title: v.title,
-          description: v.description,
-          videoURL: v.video_url,
-          createdAt: v.created_at,
-          channel: {
-            id: v.channel_id,
-            name: v.channel_name
-          }
-        }))
-      });
+    console.log("Subscription Videos:", rows);
+
+    res.status(200).json({
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
+    });
+
   } catch (err) {
     next(err);
   }

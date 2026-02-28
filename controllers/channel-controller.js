@@ -33,6 +33,7 @@ export const getMyChannels = async (req, res, next) => {
     }
 
     const results = await channelService.getMyChannels(userid);
+    console.log("My Channels:", results);
     res.status(200).json({
       count: results.length,
       results
@@ -47,25 +48,30 @@ export const getChannelSubscribers = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const page = 0;
-    const pageSize = 20;
-
     if (!id) {
       throw new AppError("Channel ID is required", 400);
     }
 
-    const results = await channelService.getChannelSubscribers({
-      channelId: id,
-      userId,
-      page,
-      pageSize
-    });
+    const page = Number(req.query.page ?? 0);
+    const pageSize = Number(req.query.pageSize ?? 20);
+
+    const { total, rows } =
+      await channelService.getChannelSubscribers({
+        channelId: id,
+        userId,
+        page,
+        pageSize
+      });
 
     res.status(200).json({
       channelId: id,
-      count: results.length,
-      results
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
     });
+
   } catch (err) {
     console.error(err);
   }
@@ -75,24 +81,26 @@ export const getChannelVideos = async (req, res) => {
   try {
     const { id } = req.params;
 
-    console.log("Fetching videos for channel ID:", id);
-
-    const page = 0;
-    const pageSize = 20;
-
     if (!id) {
       throw new AppError("Channel ID is required", 400);
     }
 
-    const results = await channelService.getChannelVideos({
-      channelId: id,
-      page,
-      pageSize
-    });
+    const page = Number(req.query.page ?? 0);
+    const pageSize = Number(req.query.pageSize ?? 20);
+
+    const { total, rows } =
+      await channelService.getChannelVideos({
+        channelId: id,
+        page,
+        pageSize
+      });
 
     res.status(200).json({
-      count: results.length,
-      results
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
     });
 
   } catch (err) {

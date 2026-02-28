@@ -18,13 +18,33 @@ export async function createComment(req, res, next) {
   }
 }
 
+//==============comment_controller=================
+
 export async function getCommentsByVideo(req, res, next) {
   try {
     const { videoId } = req.params;
-    const results= await commentsService.getCommentsByVideo(videoId);
+
+    if (!videoId) {
+      throw new AppError("Video ID is required", 400);
+    }
+
+    const page = Number(req.query.page ?? 0);
+    const pageSize = Number(req.query.pageSize ?? 20);
+
+    const { total, rows } =
+      await commentsService.getCommentsByVideo(
+        videoId,
+        { page, pageSize }
+      );
+
     res.status(200).json({
-    count: results.length, 
-    results });
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
+    });
+
   } catch (err) {
     next(err);
   }

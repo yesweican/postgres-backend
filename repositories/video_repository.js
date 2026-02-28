@@ -19,18 +19,34 @@ export const create = async ({
   return rows[0];
 };
 
-export const findByCreator = async (creatorId) => {
-  const { rows } = await pool.query(
-    `
+export const findByCreator = async (
+  creatorId,
+  { limit = 20, offset = 0 }
+) => {
+
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM videos
+    WHERE creator = $1
+  `;
+
+  const dataQuery = `
     SELECT *
     FROM videos
     WHERE creator = $1
     ORDER BY created_at DESC
-    `,
-    [creatorId]
-  );
+    LIMIT $2 OFFSET $3
+  `;
 
-  return rows;
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [creatorId]),
+    pool.query(dataQuery, [creatorId, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
 };
 
 export const findById = async (id) => {
@@ -70,29 +86,64 @@ export const update = async (id, { title, description, channel_id }) => {
   return rows[0];
 };
 
-export const search = async (query) => {
-  const { rows } = await pool.query(
-    `
+export const search = async (
+  query,
+  { limit = 20, offset = 0 }
+) => {
+
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM videos
+    WHERE
+      to_tsvector('english',
+        coalesce(title, '') || ' ' || coalesce(description, '')
+      )
+      @@ plainto_tsquery('english', $1)
+  `;
+
+  const dataQuery = `
     SELECT
       v.*,
       ts_rank(
-        to_tsvector('english', coalesce(v.title, '') || ' ' || coalesce(v.description, '')),
+        to_tsvector('english',
+          coalesce(v.title, '') || ' ' || coalesce(v.description, '')
+        ),
         plainto_tsquery('english', $1)
       ) AS rank
     FROM videos v
     WHERE
-      to_tsvector('english', coalesce(v.title, '') || ' ' || coalesce(v.description, ''))
+      to_tsvector('english',
+        coalesce(v.title, '') || ' ' || coalesce(v.description, '')
+      )
       @@ plainto_tsquery('english', $1)
     ORDER BY rank DESC, created_at DESC
-    `,
-    [query]
-  );
+    LIMIT $2 OFFSET $3
+  `;
 
-  return rows;
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [query]),
+    pool.query(dataQuery, [query, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
 };
 
-export const findSubscriptionVideos = async ( userId, { limit = 20, offset = 0 }) => {
-  const query = `
+export const findSubscriptionVideos = async (
+  userId,
+  { limit = 20, offset = 0 }
+) => {
+
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM subscriptions s
+    JOIN videos v ON v.channel_id = s.channel
+    WHERE s.subscriber = $1
+  `;
+
+  const dataQuery = `
     SELECT
       v.id,
       v.title,
@@ -102,17 +153,22 @@ export const findSubscriptionVideos = async ( userId, { limit = 20, offset = 0 }
       c.id   AS channel_id,
       c.name AS channel_name
     FROM subscriptions s
-    JOIN videos v
-      ON v.channel_id = s.channel
-    JOIN channels c
-      ON c.id = v.channel_id
+    JOIN videos v ON v.channel_id = s.channel
+    JOIN channels c ON c.id = v.channel_id
     WHERE s.subscriber = $1
     ORDER BY v.created_at DESC
     LIMIT $2 OFFSET $3
   `;
 
-  const { rows } = await pool.query(query, [userId, limit, offset]);
-  return rows;
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [userId]),
+    pool.query(dataQuery, [userId, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
 };
 
 

@@ -42,13 +42,16 @@ export const getChannelsByOwner = async (ownerId) => {
 
 export const findSubscribersByChannelId = async (
   channelId,
-  page,
-  pageSize
+  { limit = 20, offset = 0 }
 ) => {
-  const offset = page * pageSize;
 
-  const { rows } = await pool.query(
-    `
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM subscriptions
+    WHERE channel = $1
+  `;
+
+  const dataQuery = `
     SELECT
       u.id,
       u.username,
@@ -60,39 +63,53 @@ export const findSubscribersByChannelId = async (
     WHERE s.channel = $1
     ORDER BY s.created_at DESC
     LIMIT $2 OFFSET $3
-    `,
-    [channelId, pageSize, offset]
-  );
+  `;
 
-  return rows;
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [channelId]),
+    pool.query(dataQuery, [channelId, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
 };
 
 export const findVideosByChannelId = async (
   channelId,
-  page,
-  pageSize
+  { limit = 20, offset = 0 }
 ) => {
-  const offset = page * pageSize;
 
-  const { rows } = await pool.query(
-    `
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM videos
+    WHERE channel_id = $1
+  `;
+
+  const dataQuery = `
     SELECT
-      v.id,
-      v.title,
-      v.description,
-      v.video_url,
-      v.channel_id,
-      v.created_at
-    FROM videos v
-    JOIN channels c ON c.id = v.channel_id
-    WHERE v.channel_id = $1
-    ORDER BY v.created_at DESC
+      id,
+      title,
+      description,
+      video_url,
+      channel_id,
+      created_at
+    FROM videos
+    WHERE channel_id = $1
+    ORDER BY created_at DESC
     LIMIT $2 OFFSET $3
-    `,
-    [channelId, pageSize, offset]
-  );
+  `;
 
-  return rows;
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [channelId]),
+    pool.query(dataQuery, [channelId, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
 };
 
 

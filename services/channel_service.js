@@ -26,10 +26,10 @@ export const getMyChannels = async (userId) => {
 export const getChannelSubscribers = async ({
   channelId,
   userId,
-  page,
-  pageSize
+  page = 0,
+  pageSize = 20
 }) => {
-  // 1. Verify channel exists + owner
+
   const channel = await channelRepo.getChannelById(channelId);
 
   if (!channel) {
@@ -40,20 +40,21 @@ export const getChannelSubscribers = async ({
     throw new AppError("Forbidden: not channel owner", 403);
   }
 
-  // 2. Fetch subscribers
-  const subscribers = await channelRepo.findSubscribersByChannelId(
-    channelId,
-    page,
-    pageSize
-  );
+  const offset = page * pageSize;
 
-  return subscribers
+  const { total, rows } =
+    await channelRepo.findSubscribersByChannelId(
+      channelId,
+      { limit: pageSize, offset }
+    );
+
+  return { total, rows };
 };
 
 export const getChannelVideos = async ({
   channelId,
-  page,
-  pageSize
+  page = 0,
+  pageSize = 20
 }) => {
 
   const channel = await channelRepo.getChannelById(channelId);
@@ -62,14 +63,15 @@ export const getChannelVideos = async ({
     throw new AppError("Channel not found", 404);
   }
 
-  // 2. Fetch videos
-  const videos = await channelRepo.findVideosByChannelId(
-    channelId,
-    page,
-    pageSize
-  );
+  const offset = page * pageSize;
 
-  return videos;
+  const { total, rows } =
+    await channelRepo.findVideosByChannelId(
+      channelId,
+      { limit: pageSize, offset }
+    );
+
+  return { total, rows };
 };
 
 export const updateChannel = async (channelId, userId, updates) => {

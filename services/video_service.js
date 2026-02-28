@@ -25,8 +25,25 @@ export const createVideo = async (data) => {
 
 
 
-export const getMyVideos = async (userId) => {
-  return videoRepository.findByCreator(userId);
+export const getMyVideos = async (
+  userId,
+  { page = 0, pageSize = 20 } = {}
+) => {
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const offset = page * pageSize;
+
+  const { rows, total } = await videoRepository.findByCreator(
+    userId,
+    { limit: pageSize, offset }
+  );
+
+  return {
+    total,
+    rows
+  };
 };
 
 export const getVideoById = async (id) => {
@@ -66,8 +83,25 @@ export const updateVideo = async (videoId, userId, updates) => {
   return videoRepository.update(videoId, updates);
 };
 
-export const searchVideos = async (query) => {
-  return videoRepository.search(query);
+export const searchVideos = async (
+  query,
+  { page = 0, pageSize = 20 } = {}
+) => {
+  if (!query || !query.trim()) {
+    throw new Error("Search query is required");
+  }
+
+  const offset = page * pageSize;
+
+  const { rows, total } = await videoRepository.search(
+    query,
+    { limit: pageSize, offset }
+  );
+
+  return {
+    total,
+    rows
+  };
 };
 
 export const getSubscriptionVideos = async (
@@ -80,12 +114,16 @@ export const getSubscriptionVideos = async (
 
   const offset = page * pageSize;
 
-  const videos = await videoRepository.findSubscriptionVideos(
-    userId,
-    { limit: pageSize, offset }
-  );
+  const { rows, total } =
+    await videoRepository.findSubscriptionVideos(
+      userId,
+      { limit: pageSize, offset }
+    );
 
-  return videos;
+  return {
+    total,
+    rows
+  };
 };
 
 

@@ -25,9 +25,22 @@ export async function insertComment(comment) {
   return rows[0];
 }
 
-export async function findByVideoId(videoId, { limit = 20, offset = 0 } = {}) {
-  const { rows } = await pool.query(
-    `
+//===================comment-repository=================
+
+export async function findByVideoId(
+  videoId,
+  { limit = 20, offset = 0 } = {}
+) {
+
+  const totalQuery = `
+    SELECT COUNT(*)
+    FROM comments
+    WHERE video_id = $1
+      AND deleted = false
+      AND comment_replyto IS NULL
+  `;
+
+  const dataQuery = `
     SELECT
       c.id,
       c.video_id,
@@ -38,19 +51,24 @@ export async function findByVideoId(videoId, { limit = 20, offset = 0 } = {}) {
       c.created_at,
       c.updated_at
     FROM comments c
-    JOIN users u
-      ON u.id = c.creator
+    JOIN users u ON u.id = c.creator
     WHERE c.video_id = $1
       AND c.deleted = false
       AND c.comment_replyto IS NULL
     ORDER BY c.created_at DESC
     LIMIT $2 OFFSET $3
-    `,
-    [videoId, limit, offset]
-  );
+  `;
 
-  return rows;
-};
+  const [totalResult, dataResult] = await Promise.all([
+    pool.query(totalQuery, [videoId]),
+    pool.query(dataQuery, [videoId, limit, offset])
+  ]);
+
+  return {
+    total: parseInt(totalResult.rows[0].count, 10),
+    rows: dataResult.rows
+  };
+}
 
 export async function findById(id) {
   const { rows } = await pool.query(
