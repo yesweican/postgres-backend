@@ -18,12 +18,50 @@ export const create = async ({
   return rows[0];
 };
 
-export const findByAuthor = async (authorId) => {
+export const findByAuthorPaginated = async (
+  authorId,
+  offset,
+  limit
+) => {
   const { rows } = await pool.query(
-    `SELECT * FROM articles WHERE author = $1 ORDER BY created_at DESC`,
+    `
+    SELECT *
+    FROM articles
+    WHERE author = $1
+    ORDER BY created_at DESC
+    OFFSET $2
+    LIMIT $3
+    `,
+    [authorId, offset, limit]
+  );
+
+  return rows;
+};
+
+export const countByAuthor = async (authorId) => {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*) FROM articles WHERE author = $1`,
     [authorId]
   );
-  return rows;
+
+  return Number(rows[0].count);
+};
+
+
+export const countByAuthorCapped = async (
+  authorId,
+  cap
+) => {
+  const { rows } = await pool.query(
+    `
+    SELECT LEAST(COUNT(*), $2) AS count
+    FROM articles
+    WHERE author = $1
+    `,
+    [authorId, cap]
+  );
+
+  return Number(rows[0].count);
 };
 
 export const findById = async (id) => {
@@ -57,4 +95,40 @@ export const remove = async (id) => {
     `DELETE FROM Articles WHERE id = $1`,
     [id]
   );
+};
+
+
+// ===== Full Text Search (NOT author restricted) =====
+export const searchArticles = async (
+  searchTerm,
+  limit,
+  offset
+) => {
+  const { rows } = await pool.query(
+    `
+    SELECT *,
+           ts_rank(search_vector, plainto_tsquery('english', $1)) AS rank
+    FROM articles
+    WHERE search_vector @@ plainto_tsquery('english', $1)
+    ORDER BY rank DESC, created_at DESC
+    LIMIT $2 OFFSET $3
+    `,
+    [searchTerm, limit, offset]
+  );
+
+  return rows;
+};
+
+
+export const countSearchArticles = async (searchTerm) => {
+  const { rows } = await pool.query(
+    `
+    SELECT COUNT(*)::int AS count
+    FROM articles
+    WHERE search_vector @@ plainto_tsquery('english', $1)
+    `,
+    [searchTerm]
+  );
+
+  return rows[0].count;
 };

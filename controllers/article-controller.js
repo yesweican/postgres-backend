@@ -29,18 +29,33 @@ export const createArticle = async (req, res, next) => {
   }
 };
 
-export const getMyArticles = async (req, res, next) => {
+export const getArticles = async (req, res, next) => {
   try {
-    const userid = req.user.id;
-
-    if (!userid) {
-      throw new AppError("User ID is required", 400);
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      throw new AppError("Authentication required", 401);
     }
 
-    const results = await articleService.getMyArticles(userid);
+    const { author } = req.query;
+
+    const page = Number(req.query.page ?? 0);
+    const pageSize = Number(req.query.pageSize ?? 20);
+
+    const targetAuthor = author ?? currentUserId;
+
+    const { total, rows } = await articleService.getArticles({
+      currentUserId,
+      targetAuthor,
+      page,
+      pageSize
+    });
+
     res.status(200).json({
-      count: results.length,
-      results
+      page,
+      pageSize,
+      total,
+      count: rows.length,
+      results: rows
     });
   } catch (err) {
     next(err);
@@ -84,6 +99,38 @@ export const deleteArticle = async (req, res, next) => {
   try {
     await articleService.deleteArticle(req.params.id, req.user.id);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const searchArticles = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      throw new AppError("Search term is required", 400);
+    }
+
+    const page = Number(req.query.page ?? 0);
+    const pageSize = Number(req.query.pageSize ?? 20);
+
+    const { total, results } =
+      await articleService.searchArticles(
+        q,
+        page,
+        pageSize
+      );
+
+    res.status(200).json({
+      page,
+      pageSize,
+      total,
+      count: results.length,
+      results
+    });
+
   } catch (err) {
     next(err);
   }

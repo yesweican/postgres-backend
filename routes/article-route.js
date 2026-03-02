@@ -12,7 +12,7 @@ router.post(
   articleController.createArticle
 );
 
-router.get("/", authenticateToken, articleController.getMyArticles);
+router.get("/", authenticateToken, articleController.getArticles);
 router.get("/:id", articleController.getArticleById);
 
 router.put(
