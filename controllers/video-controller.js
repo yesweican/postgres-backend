@@ -42,10 +42,9 @@ export const getMyVideos = async (req, res, next) => {
 
     const { page, pageSize, offset } = getPaginationParams(req);
 
-    const { rows, total } = await videoService.getMyVideos(
+      const { rows, total } = await videoService.getMyVideos(
       userId,
-      pageSize,
-      offset
+      { page, pageSize }
     );
 
     res.status(200).json({
