@@ -105,8 +105,7 @@ export const searchVideos = async (req, res, next) => {
 
     const { rows, total } = await videoService.searchVideos(
       q,
-      pageSize,
-      offset
+      {page, pageSize}
     );
 
     res.status(200).json({
@@ -135,8 +134,7 @@ export const getSubscriptionVideos = async (req, res, next) => {
 
     const { rows, total } = await videoService.getSubscriptionVideos(
       userId,
-      pageSize,
-      offset
+      {page, pageSize}
     );
 
     console.log("Subscription Videos:", rows);
